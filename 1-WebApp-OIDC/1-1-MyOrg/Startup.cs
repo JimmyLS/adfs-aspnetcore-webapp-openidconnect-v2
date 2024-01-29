@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Microsoft.IdentityModel.Tokens;
 
 namespace WebApp_OpenIDConnect_DotNet
 {
@@ -35,7 +36,12 @@ namespace WebApp_OpenIDConnect_DotNet
 
             // Sign-in users with the Microsoft identity platform
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApp(options => Configuration.Bind("AzureAd", options));
+            .AddMicrosoftIdentityWebApp(options => 
+            {
+                Configuration.Bind("Adfs", options);
+                options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = false }; // This is to disable the tenant ID verification in ADFS login scenario
+                options.SaveTokens = true; // This is to support sending "id_token_hint" in log out redirect to ADFS
+            });
 
             services.AddControllersWithViews(options =>
             {
